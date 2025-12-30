@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.dashboard.userDashBoard.mapper.UserDashBoardMapper">
+    <!--카드 4개에 들어가는 값들-->
+    <select id="getTotalInterviewCount" parameterType="int" resultType="int">
+        select count(*) from interview_session where s_m_idx =#{m_idx}
+    </select>
+    <select id="getTotalResumeCount" parameterType="int" resultType="int">
+        select count(*) from resume_log where r_m_idx =#{m_idx}
+    </select>
+    <select id="getAverageScore" parameterType="int" resultType="int">
+        select sa.sa_total_score
+        from interview_session s
+        join interview_session_analysis sa
+        on s.s_idx=sa.sa_s_idx
+        where s.s_m_idx = #{m_idx}
+        order by s.s_date desc
+        limit 1;
+    </select>
+    <select id="getBestScore" parameterType="int" resultType="int">
+        select MAX(sa.sa_total_score)
+        from interview_session s
+        join interview_session_analysis sa
+        on s.s_idx = sa.sa_s_idx
+        where s.s_m_idx = #{m_idx};
+    </select>
+
+    <!--  Radar에 들어가는 5가지 값들   -->
+    <select id="getInterviewSkillRadar" parameterType="int" resultType="UserInterviewSkillRadarVO">
+        select
+               sa.sa_tech_score    as techScore,
+               sa.sa_logic_score   as logicScore,
+               sa.sa_soft_score    as softScore,
+               sa.sa_level_avg     as levelAvg,
+               sa.sa_wrong_answer_rate as accuracyRate
+        from interview_session s
+        join interview_session_analysis sa
+        on s.s_idx = sa.sa_s_idx
+        where s.s_m_idx =#{m_idx}
+        order by s.s_date desc
+        limit 1;
+    </select>
+    <select id="getRecentInterviewScore" parameterType="int" resultType="UserRecentInterviewScoreTrendVO">
+        select
+            sa.sa_tech_score as techScore,
+            sa.sa_logic_score as logicScore,
+            sa.sa_soft_score as softScore,
+            sa.sa_total_score as averageScore
+        from interview_session s
+        join interview_session_analysis sa
+        on s.s_idx = sa.sa_s_idx
+        where s.s_m_idx =#{m_idx}
+        order by s.s_date desc
+        limit 5;
+    </select>
+
+    <select id="getRecentInterviewSummary" parameterType="int" resultType="UserRecentInterviewSummaryVO">
+        select
+            s.s_title  as title,
+            sa.sa_total_score as score,
+            sa.sa_create_at as interviewDate,
+            sa.sa_strengths as goodContent,
+            sa.sa_weaknesses as weakContent,
+            sa.sa_feedback as feedback
+        from interview_session s
+        join interview_session_analysis sa
+        on s.s_idx = sa.sa_s_idx
+        where s.s_m_idx =#{m_idx}
+        order by s.s_date desc
+        limit 2;
+    </select>
+
+
+</mapper>

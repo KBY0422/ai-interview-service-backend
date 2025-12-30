@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.analysis.list.mapper.InterviewAnalysisListMapper">
+
+    <select id="getAnalysisListByMember"
+            parameterType="int"
+            resultType="com.ict.finalproject.analysis.list.vo.InterviewAnalysisListVO">
+
+        SELECT
+            s.s_idx AS sIdx,
+            DATE_FORMAT(s.s_date, '%Y-%m-%d') AS date,
+            s.s_job AS job,
+            s.s_type AS type,
+
+            a.sa_total_score AS totalScore,
+
+            CASE WHEN f.f_active = 1 THEN 1 ELSE 0 END AS hasPdf,
+
+            CONCAT(
+                '[',
+                DATE_FORMAT(s.s_date, '%Y-%m-%d'),
+                '] ',
+                s.s_job,
+                ' 면접 분석 결과'
+            ) AS title
+
+        FROM interview_session s
+
+        /* 분석 결과 */
+        LEFT JOIN interview_session_analysis a
+            ON s.s_idx = a.sa_s_idx
+
+        /* PDF 파일 존재 여부  */
+        LEFT JOIN interview_file f
+            ON s.s_idx = f.f_s_idx
+            AND f.f_active = 1
+
+        WHERE s.s_m_idx = #{mIdx}
+        AND s.s_active = 1
+
+        ORDER BY s.s_idx DESC;
+
+    </select>
+
+</mapper>

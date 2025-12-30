@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.member.mapper.MemberMapper">
+
+    <!-- ResultMap 정의 -->
+    <resultMap id="memberResultMap" type="MemberVO">
+        <id property="m_idx" column="m_idx"/>
+        <result property="m_name" column="m_name"/>
+        <result property="m_id" column="m_id"/>
+        <result property="m_pwd" column="m_pwd"/>
+        <result property="m_email" column="m_email"/>
+        <result property="m_addr1" column="m_addr1"/>
+        <result property="m_addr2" column="m_addr2"/>
+        <result property="m_active" column="m_active"/>
+        <result property="m_admin" column="m_admin"/>
+        <result property="m_regdate" column="m_regdate"/>
+    </resultMap>
+
+    <!-- 아이디 중복 체크 -->
+    <select id="idCheck" resultType="int">
+        select count(*) from member where m_id = #{m_id}
+    </select>
+
+    <!-- 회원가입 주소 없어도 가입되게-->
+    <insert id="register" parameterType="MemberVO">
+        INSERT INTO member (
+        m_name,
+        m_id,
+        m_pwd,
+        m_email,
+        m_active,
+        m_admin
+        <if test="m_addr1 != null">
+            , m_addr1
+        </if>
+        <if test="m_addr2 != null">
+            , m_addr2
+        </if>
+        )
+        VALUES (
+        #{m_name},
+        #{m_id},
+        #{m_pwd},
+        #{m_email},
+        1,
+        0
+        <if test="m_addr1 != null">
+            , #{m_addr1}
+        </if>
+        <if test="m_addr2 != null">
+            , #{m_addr2}
+        </if>
+        )
+    </insert>
+
+
+
+    <!-- 회원 조회 (resultMap 사용) -->
+    <select id="findById" parameterType="String" resultMap="memberResultMap">
+        select * from member where m_id = #{m_id}
+    </select>
+
+    <select id="findByIdx" parameterType="int" resultMap="memberResultMap">
+        SELECT *
+        FROM member
+        WHERE m_idx = #{mIdx}
+    </select>
+
+    <select id="findByEmail" parameterType="String" resultMap="memberResultMap">
+        SELECT *
+        FROM member
+        WHERE m_email = #{m_email}
+    </select>
+
+    <!-- RefreshToken 저장 -->
+    <insert id="saveRefreshToken" parameterType="RefreshVO">
+        insert into refresh_token(m_id, refreshToken, expiration)
+        values(#{m_id}, #{refreshToken}, #{expiration})
+        ON DUPLICATE KEY UPDATE
+        refreshToken = #{refreshToken},
+        expiration = #{expiration}
+    </insert>
+
+    <!-- RefreshToken 조회 -->
+    <select id="getRefreshToken" parameterType="String" resultType="RefreshVO">
+        select * from refresh_token where m_id = #{m_id}
+    </select>
+
+    <!-- 아이디 찾기 -->
+    <select id="findId" parameterType="map" resultMap="memberResultMap">
+        select * from member where m_name= #{m_name} and m_email = #{m_email}
+    </select>
+
+    <!-- 비밀번호 변경 -->
+    <update id="newPassword" parameterType="MemberVO">
+        update member
+        set m_pwd = #{m_pwd} where m_id = #{m_id} and m_email = #{m_email}
+    </update>
+
+    <!-- 개인정보 변경 -->
+    <update id="updateMyInfo" parameterType="MemberVO">
+        update member
+        set m_addr1 = #{m_addr1}, m_addr2 = #{m_addr2} where m_id = #{m_id} and m_email = #{m_email}
+    </update>
+
+    <!-- 회원 탈퇴 -->
+    <update id="deactivateMember">
+        UPDATE member
+        SET m_active = '0',
+        m_d_regdate = now()
+        WHERE m_idx = #{m_idx}
+    </update>
+</mapper>

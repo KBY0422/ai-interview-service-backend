@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.dashboard.adminDashBoard.mapper.AdminDashBoardMapper">
+    <!--  전체 사용자수   -->
+    <select id="getTotalUserCount" resultType="int">
+        select count(*) from member where m_admin=0 and m_active =1
+    </select>
+    <!--  오늘의 면접   -->
+    <select id="getTodayInterview" resultType="int">
+        <![CDATA[
+            SELECT COUNT(*)
+            FROM interview_session
+            WHERE s_date >= CURDATE()
+              AND s_date < CURDATE() + INTERVAL 1 DAY
+            ]]>
+    </select>
+    <!--  오늘의 이력서   -->
+    <select id="getTodayResume" resultType="int">
+        <![CDATA[
+            SELECT COUNT(*)
+            FROM resume_log
+            WHERE r_regdate >= CURDATE()
+              AND r_regdate < CURDATE() + INTERVAL 1 DAY
+            ]]>
+    </select>
+    <!--  오늘의 매출   -->
+    <select id="getTodayRevenue" resultType="AdminRevenueTrendRawVO">
+        <![CDATA[
+                SELECT
+                t_purpose AS purpose,
+                COUNT(*)  AS usageCount
+                FROM token_usage_log
+                WHERE t_created_at >= CURDATE()
+                AND t_created_at < CURDATE() + INTERVAL 1 DAY
+                AND t_purpose IN ('SESSION', 'RESUME')
+                GROUP BY t_purpose
+         ]]>
+    </select>
+    <!--   최근 일주일 매출추세(오늘 포함)  -->
+    <select id="getRevenueTrend" resultType="AdminRevenueTrendRawVO">
+        <![CDATA[
+            SELECT
+            DATE(t_created_at) AS date,
+            t_purpose          AS purpose,
+            COUNT(*)           AS usageCount
+            FROM token_usage_log
+            WHERE t_created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+            AND t_purpose IN ('SESSION', 'RESUME')
+            GROUP BY DATE(t_created_at), t_purpose
+            ORDER BY DATE(t_created_at)
+            ]]>
+    </select>
+    <!-- 직무 top3 최근 3개월 -->
+    <select id="getTopjob" resultType="AdminTopJobVO">
+        <![CDATA[
+            SELECT
+                s_job AS job,
+                COUNT(*) AS count
+            FROM interview_session
+            WHERE s_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+            GROUP BY s_job
+            ORDER BY count DESC
+            LIMIT 3
+        ]]>
+    </select>
+    <!--  기술스택 top3 최근 3개월 -->
+    <select id="getTopSkill" resultType="AdminTopSkillVO">
+        <![CDATA[
+                SELECT
+                    TRIM(skill) AS skill,
+                    COUNT(*) AS count
+                FROM interview_session
+                JOIN JSON_TABLE(
+                    CONCAT('["', REPLACE(s_skill, ',', '","'), '"]'),
+                    '$[*]' COLUMNS (skill VARCHAR(50) PATH '$')
+                ) AS jt
+                WHERE s_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+                GROUP BY skill
+                ORDER BY count DESC
+                LIMIT 3
+            ]]>
+    </select>
+    <!--   검색 키워드 top3   -->
+    <select id="getTopKeyword" resultType="AdminTopKeywordVO">
+        SELECT
+        k_content AS keyword,
+        k_count AS count
+        FROM keyword
+        ORDER BY k_count DESC
+        LIMIT 3
+    </select>
+
+
+
+</mapper>

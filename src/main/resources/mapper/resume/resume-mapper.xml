@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.resume.mapper.ResumeMapper">
+    <insert id="plusCount"
+            parameterType="ResumeVO"
+            useGeneratedKeys="true"
+            keyProperty="rIdx">
+        INSERT INTO resume_log (r_m_idx)
+        VALUES (#{mIdx})
+    </insert>
+
+    <select id="selectLatestResumeIdx"
+            parameterType="int"
+            resultType="int">
+        SELECT r_idx
+        FROM resume_log
+        WHERE r_m_idx = #{mIdx}
+        ORDER BY r_regdate DESC
+        LIMIT 1
+    </select>
+</mapper>

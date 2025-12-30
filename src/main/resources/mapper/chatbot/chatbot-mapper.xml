@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.chatbot.mapper.ChatBotMapper">
+
+    <insert id="insertTokenUsage"
+            parameterType="com.ict.finalproject.chatbot.vo.ChatBotVO"
+            useGeneratedKeys="true"
+            keyProperty="tIdx">
+
+        INSERT INTO token_usage_log (
+        t_m_idx,
+        t_total,
+        t_created_at,
+        t_purpose
+        ) VALUES (
+        #{tMIdx},
+        #{tTotal},
+        NOW(),
+        #{tPurpose}
+        )
+
+    </insert>
+
+</mapper>

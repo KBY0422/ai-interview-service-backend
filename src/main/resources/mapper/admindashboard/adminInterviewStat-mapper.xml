@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.dashboard.adminInterviewStat.mapper.AdminInterviewStatMapper">
+    <!-- 각 카드에 들어가는 값들    -->
+    <select id="getTodayInterviewCount" resultType="int">
+       <![CDATA[
+        select count(*) AS todayInterviewCount
+        from interview_session
+        WHERE s_date >= CURDATE()
+        AND s_date < CURDATE() + INTERVAL 1 DAY
+        ]]>
+    </select>
+    <select id="getWeekInterviewCount" resultType="int">
+        <![CDATA[
+        select count(*) AS weekInterviewCount
+        from interview_session
+        WHERE s_date >= DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY)
+        AND s_date < DATE_ADD(DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), INTERVAL 7 DAY)
+        ]]>
+    </select>
+    <select id="getMonthInterviewCount" resultType="int">
+        <![CDATA[
+            SELECT COUNT(*) AS monthInterviewCount
+            FROM interview_session
+            WHERE s_date >= DATE_SUB(CURDATE(), INTERVAL DAY(CURDATE()) - 1 DAY)
+            AND s_date < DATE_ADD(
+            DATE_SUB(CURDATE(), INTERVAL DAY(CURDATE()) - 1 DAY),
+            INTERVAL 1 MONTH
+            );
+        ]]>
+    </select>
+    <select id="getAverageScore" resultType="int">
+        SELECT IFNULL(ROUND(AVG(sa_total_score), 0), 0) AS averageScore
+        FROM interview_session_analysis;
+    </select>
+
+    <!-- 직종 과 직종선택 횟수  최근 3개월  -->
+    <select id="getJobRatio" resultType="JobRatioVO">
+        <![CDATA[
+                SELECT
+                  s_job AS job,
+                  COUNT(*) AS count
+                FROM interview_session
+                WHERE s_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+                GROUP BY s_job
+                ORDER BY count DESC
+        ]]>
+    </select>
+    <!--  기술스택 가져오기  최근 3개월 -->
+    <select id="getJobSkillRatio" resultType="JobSkillRatioVO">
+        SELECT
+        s_job AS job,
+        TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(s_skill, ',', n.n), ',', -1)) AS skill,
+        COUNT(*) AS count
+        FROM interview_session
+        JOIN (
+        SELECT 1 n UNION ALL
+        SELECT 2 UNION ALL
+        SELECT 3 UNION ALL
+        SELECT 4 UNION ALL
+        SELECT 5
+        ) n
+        ON CHAR_LENGTH(s_skill)
+        - CHAR_LENGTH(REPLACE(s_skill, ',', '')) >= n.n - 1
+        WHERE s_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+        AND s_skill IS NOT NULL
+        GROUP BY job, skill
+        ORDER BY job, count DESC;
+    </select>
+    <!-- 면접유형 선택 비율  최근 3개월  -->
+    <select id="getInterviewTypeRatio" resultType="InterviewTypeRatioVO">
+        <![CDATA[
+        SELECT
+            s_type   AS interviewType,
+            COUNT(*) AS count
+            FROM interview_session
+            WHERE s_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+            AND s_type IS NOT NULL
+            AND s_type <> ''
+            GROUP BY s_type
+            ORDER BY count DESC
+         ]]>
+    </select>
+    <!-- 최근 7일동안 면접 수 변화   -->
+    <select id="getDailyInterviewCount" resultType="DailyInterviewCountVO">
+        select
+        DATE(s_date) as date,
+        count(*) as count
+        from interview_session
+        where s_date >= DATE_SUB(CURDATE(),INTERVAL 6 DAY)
+        group by DATE(s_date)
+    </select>
+
+    <!--월별 면접수 변화-->
+    <select id="getMonthlyInterviewCount" resultType="MonthlyInterviewTrendVO">
+        <![CDATA[
+            SELECT
+            DATE_FORMAT(s_date, '%Y-%m') AS monthLabel,
+            COUNT(*) AS interviewCount
+            FROM interview_session
+            WHERE YEAR(s_date) = YEAR(CURDATE())
+            GROUP BY DATE_FORMAT(s_date, '%Y-%m')
+            ORDER BY monthLabel
+        ]]>
+    </select>
+
+    <!--최근 7일간 평균 난이도 변화-->
+    <select id="getDailyAvgDifficuilty" resultType="DailyAvgDifficultyVO">
+        <![CDATA[
+        select
+        DATE(sa_create_at) as date,
+        AVG(sa_level_avg) as avgDifficulty
+        from interview_session_analysis
+        where sa_create_at >= DATE_SUB(CURDATE(),INTERVAL 6 DAY)
+        and sa_level_avg is not null
+        group by DATE(sa_create_at)
+        ORDER BY date
+          ]]>
+    </select>
+
+    <!--최근 7일 간 평균점수 변화-->
+    <select id="getDailyAvgScore" resultType="DailyAvgScoreVO">
+        <![CDATA[
+        select
+        DATE(sa_create_at) as date,
+        round(AVG(sa_total_score)) as avgScore
+        from interview_session_analysis
+        where sa_create_at >= DATE_SUB(CURDATE(),INTERVAL 6 DAY)
+        AND sa_total_score IS NOT NULL
+        group by DATE(sa_create_at)
+        ORDER BY date
+         ]]>
+    </select>
+
+</mapper>

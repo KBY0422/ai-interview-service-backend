@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.inquery.mapper.InqueryMapper">
+
+    <!-- ResultMap -->
+    <resultMap id="inqueryMap" type="com.ict.finalproject.inquery.vo.InqueryVO">
+        <id property="i_idx" column="i_idx"/>
+
+        <result property="i_m_idx" column="i_m_idx"/>
+        <result property="i_category" column="i_category"/>
+        <result property="i_title" column="i_title"/>
+        <result property="i_content" column="i_content"/>
+        <result property="i_writer" column="i_writer"/>
+        <result property="i_writedate" column="i_writedate"/>
+        <result property="i_pwd" column="i_pwd"/>
+        <result property="i_active" column="i_active"/>
+        <result property="i_reply" column="i_reply"/>
+        <result property="i_check" column="i_check"/>
+        <result property="i_response" column="i_response"/>
+    </resultMap>
+
+    <!-- List -->
+    <select id="getList" resultMap="inqueryMap">
+        SELECT *
+        FROM inquery
+        WHERE i_active = 1
+        ORDER BY i_idx DESC
+    </select>
+
+    <!-- Total Count -->
+    <select id="getTotalRecord" resultType="int">
+        SELECT COUNT(*)
+        FROM inquery
+        WHERE i_active = 1
+    </select>
+
+    <!-- Paging -->
+    <select id="getPageList" parameterType="map" resultMap="inqueryMap">
+        SELECT *
+        FROM inquery
+        WHERE i_active = 1
+        ORDER BY i_idx DESC
+        LIMIT #{start}, #{limit}
+    </select>
+
+    <!-- Detail -->
+    <select id="getDetail" parameterType="String" resultMap="inqueryMap">
+        SELECT *
+        FROM inquery
+        WHERE i_idx = #{i_idx}
+    </select>
+
+    <!-- Insert -->
+    <insert id="getInsert" parameterType="com.ict.finalproject.inquery.vo.InqueryVO">
+        INSERT INTO inquery (
+        i_m_idx,
+        i_writer,
+        i_title,
+        i_content,
+        i_pwd,
+        i_category,
+        i_writedate,
+        i_active,
+        i_reply
+        ) VALUES (
+        #{i_m_idx},
+        #{i_writer},
+        #{i_title},
+        #{i_content},
+        #{i_pwd},
+        #{i_category},
+        #{i_writedate},
+        1,
+        1
+        )
+    </insert>
+
+    <!-- Soft Delete -->
+    <update id="getDelete" parameterType="String">
+        UPDATE inquery
+        SET i_active = 0
+        WHERE i_idx = #{i_idx}
+    </update>
+
+    <!-- Update Content -->
+    <update id="getUpdate" parameterType="com.ict.finalproject.inquery.vo.InqueryVO">
+        UPDATE inquery
+        SET i_content = #{i_content},
+        i_title = #{i_title}
+        WHERE i_idx = #{i_idx}
+    </update>
+
+    <!-- Admin Response -->
+    <update id="getUpdateResponse" parameterType="com.ict.finalproject.inquery.vo.InqueryVO">
+        UPDATE inquery
+        SET
+        i_reply = 0,
+        i_response = #{i_response}
+        WHERE i_idx = #{i_idx}
+    </update>
+
+</mapper>

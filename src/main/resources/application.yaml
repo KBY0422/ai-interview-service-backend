@@ -1,0 +1,68 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: finalproject
+
+  profiles:
+    active: secret # 시크릿.yml을 같이 읽게함
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${spring.datasource.url}
+    username: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+
+  ai:
+    custom:
+      system-prompt: ${spring.ai.custom.system-prompt}
+    openai:
+      api-key: ${spring.ai.openai.api-key}
+      chat:
+        options:
+          model: ${spring.ai.openai.chat.options.model}
+          temperature: ${spring.ai.openai.chat.options.temperature}
+
+  sql:
+    init:
+      mode: never
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.ict.finalproject
+  configuration:
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    root: INFO
+    org.mybatis: TRACE
+
+file:
+  pdf-dir: ${file.pdf-dir}
+
+api:
+  gpt:
+    key: ${api.gpt.key}
+    model: ${api.gpt.model}
+  naver:
+    client-id: ${api.naver.client-id}
+    client-secret: ${api.naver.client-secret}
+
+mail:
+  smtp:
+    host: smtp.naver.com
+    port: 587
+    auth: true
+    starttls:
+      enable: true
+    username: ${mail.smtp.username}
+    password: ${mail.smtp.password}
+    sender:
+      name: AI-InterView관리자
+
+jwt:
+  secret: ${jwt.secret}
+  access-token-validity: 900000
+  refresh-token-validity: 86400000

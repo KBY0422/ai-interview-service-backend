@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.OpenAIGPT.mapper.OpenAiGptMapper">
+
+    <resultMap id="EnvJobMap" type="EnvJobVO">
+        <id column="e_job_idx" property="e_job_idx"/>
+        <result column="e_job" property="e_job"/>
+    </resultMap>
+
+    <resultMap id="EnvSkillMap" type="EnvSkillVO">
+        <id column="e_skill_idx" property="e_skill_idx"/>
+        <result column="e_skill" property="e_skill"/>
+        <result column="e_skill_job" property="e_skill_job"/>
+    </resultMap>
+
+    <update id="tokenUsageUpdate" parameterType="TokenUsageVO">
+        update token_usage_log set t_prompt = t_prompt + #{t_prompt},
+        t_completion = t_completion + #{t_completion},
+        t_total = t_total + #{t_total}
+        where t_m_idx = #{t_m_idx} and t_s_idx = #{t_s_idx}
+    </update>
+
+    <select id="getJobList" resultMap="EnvJobMap">
+        select * from interview_env_job order by e_job_idx asc
+    </select>
+
+    <select id="getJobSkillList" parameterType="String" resultMap="EnvSkillMap">
+        SELECT *
+        FROM interview_env_skill
+        <where>
+            <choose>
+                <when test="_parameter == '풀스택'">
+                    (e_skill_job = '프론트엔드' OR e_skill_job = '백엔드')
+                </when>
+                <otherwise>
+                    e_skill_job = #{e_job}
+                </otherwise>
+            </choose>
+        </where>
+        order by e_skill_idx asc
+    </select>
+
+    <insert id="writeInterview" parameterType="java.util.List">
+        insert into interview_qna (q_s_idx, q_content, q_type)
+        values
+        <foreach collection="list" item="v" separator=",">
+            (#{v.q_s_idx}, #{v.q_content}, #{v.q_type})
+        </foreach>
+    </insert>
+
+    <select id="getMemberIdx" parameterType="String" resultType="String">
+        select m_idx from member where m_name = #{m_name}
+    </select>
+
+    <insert id="writeSession" parameterType="ItvSessionVO">
+        insert into interview_session (s_m_idx, s_title, s_job, s_type, s_skill, s_level, s_date)
+        values(#{s_m_idx}, #{s_title}, #{s_job}, #{s_type}, #{s_skill}, #{s_level}, now() )
+    </insert>
+
+    <select id="getLastSessionIdx" parameterType="String" resultType="String">
+        select s_idx from interview_session where s_m_idx = #{m_idx} order by s_idx DESC LIMIT 1
+    </select>
+
+    <insert id="setAdminInterviewSessionJob" parameterType="java.util.List">
+        insert ignore into interview_env_job (e_job)
+        values
+        <foreach collection="list" item="v" separator=",">
+            (#{v.e_job})
+        </foreach>
+    </insert>
+
+    <insert id="setAdminInterviewSessionSkill" parameterType="java.util.List">
+        insert ignore into interview_env_skill (e_skill, e_skill_job)
+        values
+        <foreach collection="list" item="v" separator=",">
+            (#{v.e_skill}, #{v.e_skill_job})
+        </foreach>
+    </insert>
+
+    <select id="getSkillList" resultMap="EnvSkillMap">
+        select * from interview_env_skill order by e_skill_job ASC, e_skill ASC
+    </select>
+
+    <delete id="adminDeleteJob" parameterType="String">
+        delete from interview_env_job where e_job_idx = #{e_job_idx}
+    </delete>
+
+    <delete id="adminDeleteSkill" parameterType="String">
+        delete from interview_env_skill where e_skill_idx = #{e_skill_idx}
+    </delete>
+
+    <insert id="writeTokenUsageSession" parameterType="TokenUsageVO">
+        insert into token_usage_log (t_m_idx, t_s_idx, t_prompt, t_completion, t_total, t_created_at ,t_purpose)
+        values(#{t_m_idx}, #{t_s_idx}, #{t_prompt}, #{t_completion}, #{t_total}, now(), #{t_purpose})
+    </insert>
+</mapper>

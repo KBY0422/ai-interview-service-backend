@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.dashboard.adminUserStat.mapper.AdminUserStatMapper">
+    <!--  전체 회원수 = 활성 + 비활성  -->
+    <select id="getTotalUser"  resultType="int">
+        select count(*) from member where m_admin =0
+    </select>
+    <!--  오늘의 회원가입수   -->
+    <select id="getTodaySignup"  resultType="int">
+        <![CDATA[
+            SELECT COUNT(*)
+            FROM member
+            WHERE m_regdate >= CURDATE()
+              AND m_regdate < CURDATE() + INTERVAL 1 DAY
+              AND m_admin = 0
+            ]]>
+    </select>
+    <!-- 이번주 회원가입수   -->
+    <select id="getWeekSignup"  resultType="int">
+        <![CDATA[
+        select count(*)
+        from member
+        where m_regdate >= DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY)
+        AND m_regdate < DATE_ADD(DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), INTERVAL 7 DAY)
+        AND m_admin = 0
+          ]]>
+    </select>
+    <!--  활성 회원수   -->
+    <select id="getActiveUserCount"  resultType="int">
+        select count(*) from member where m_admin =0 and m_active =1
+    </select>
+
+
+
+    <!--  최근 7일 가입수 동향   -->
+    <select id="getDailySignup" resultType="DailySignupTrendVO">
+        SELECT
+        DATE(m_regdate) AS signupDate,
+        COUNT(*) AS signupCount
+        FROM member
+        WHERE m_regdate >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+        AND m_admin = 0
+        GROUP BY DATE(m_regdate)
+    </select>
+
+    <!-- 월별 전체 회원가입수 동향   -->
+    <select id="getMonthlyUser"  resultType="MonthlyUserCountVO">
+        SELECT
+        DATE_FORMAT(m_regdate, '%Y-%m') AS month,
+        COUNT(*) AS totalUserCount
+        FROM member
+        WHERE m_admin = 0 and m_active = 1
+        GROUP BY DATE_FORMAT(m_regdate, '%Y-%m')
+        ORDER BY month;
+    </select>
+
+    <!-- 해당월에 회원 탈퇴한 회원수 가져오기   -->
+    <select id="getActiveUser"  resultType="MonthlyInactiveUserStatVO">
+        SELECT
+        DATE_FORMAT(m_d_regdate, '%Y-%m') AS month,
+        COUNT(*) AS inactiveUserCount
+        FROM member
+        WHERE m_admin = 0 and m_active =0
+        AND m_d_regdate IS NOT NULL
+        GROUP BY DATE_FORMAT(m_d_regdate, '%Y-%m')
+        ORDER BY month;
+    </select>
+
+    <!-- 해당월에 회원한 회원수 가져오기   -->
+    <select id="getJoinCountVO" resultType="MonthlyJoinCountVO">
+        SELECT
+        DATE_FORMAT(m_regdate, '%Y-%m') AS month,
+        COUNT(*) AS joinCount
+        FROM member
+        WHERE m_admin = 0 and m_active =1
+        GROUP BY DATE_FORMAT(m_regdate, '%Y-%m')
+        ORDER BY month;
+    </select>
+
+
+
+</mapper>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.dashboard.adminTokenStat.mapper.AdminTokenStatMapper">
+
+    <select id="getTodayTokenUsage" resultType="TokenUsageAggregateVO">
+        SELECT
+        t_purpose        AS purpose,
+        COUNT(*)         AS usageCount,
+        SUM(t_total)     AS totalTokens
+        FROM token_usage_log
+        WHERE DATE(t_created_at) = CURDATE()
+        GROUP BY t_purpose
+    </select>
+    <select id="getMonthlyTokenUsage" resultType="TokenUsageAggregateVO">
+        SELECT
+        t_purpose        AS purpose,
+        COUNT(*)         AS usageCount,
+        SUM(t_total)     AS totalTokens
+        FROM token_usage_log
+        WHERE DATE_FORMAT(t_created_at, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')
+        GROUP BY t_purpose
+    </select>
+    <!--  이번년도 누적 사용금액 추이  -->
+    <select id="getTotalServiceUsage" resultType="TokenUsageAggregateVO">
+        select
+        t_purpose as purpose,
+        count(*) as usageCount,
+        SUM(t_total)  as totalTokens
+        FROM token_usage_log
+        WHERE YEAR(t_created_at) = YEAR(CURDATE())
+        GROUP BY t_purpose
+    </select>
+    <!--  이번년도 기준 서비스별 GPT 비용   -->
+    <select id="getServiceUsageRatio" resultType="TokenUsageAggregateVO">
+        SELECT
+        t_purpose AS purpose,
+        SUM(t_total) AS totalTokens
+        FROM token_usage_log
+        WHERE YEAR(t_created_at) = YEAR(CURDATE())
+        GROUP BY t_purpose
+    </select>
+
+    <select id="getDailySerivceGpt" resultType="DailyTokenUsageRawVO">
+        SELECT
+        DATE(t_created_at) AS date,
+        t_purpose AS purpose,
+        SUM(t_total) AS totalTokens
+        FROM token_usage_log
+        WHERE t_created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+        GROUP BY DATE(t_created_at), t_purpose
+        ORDER BY date
+    </select>
+    <!-- 이번년도 월별 서비스별 gpt 비용    -->
+    <select id="getMonthlySerivceGpt" resultType="DailyTokenUsageRawVO">
+        SELECT
+        DATE_FORMAT(t_created_at, '%Y-%m') AS date,  -- 월 단위
+        t_purpose AS purpose,
+        SUM(t_total) AS totalTokens
+        FROM token_usage_log
+        WHERE YEAR(t_created_at) = YEAR(CURDATE())
+        GROUP BY DATE_FORMAT(t_created_at, '%Y-%m'), t_purpose
+        ORDER BY date
+    </select>
+    <select id="getDailyRevenue" resultType="DailyTokenUsageRawVO">
+        SELECT
+        DATE(t_created_at) AS date,
+        t_purpose AS purpose,
+        COUNT(*) AS usageCount,
+        SUM(t_total) AS totalTokens
+        FROM token_usage_log
+        WHERE t_created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+        GROUP BY DATE(t_created_at), t_purpose
+        ORDER BY date
+    </select>
+    <!-- 이번년도 월별 매출,추정이익    -->
+    <select id="getMonthlyRevenue" resultType="DailyTokenUsageRawVO">
+        SELECT
+        DATE_FORMAT(t_created_at, '%Y-%m') AS date,
+        t_purpose AS purpose,
+        COUNT(*) AS usageCount,
+        SUM(t_total) AS totalTokens
+        FROM token_usage_log
+        WHERE YEAR(t_created_at) = YEAR(CURDATE())
+        GROUP BY DATE_FORMAT(t_created_at, '%Y-%m'), t_purpose
+        ORDER BY date
+    </select>
+    <!--  오픈때부터 누적 운영 결과요약   -->
+    <select id="getCumulativeFinance" resultType="TokenUsageAggregateVO">
+        <![CDATA[
+            SELECT
+            t_purpose           AS purpose,
+            COUNT(*)            AS usageCount,
+            COALESCE(SUM(t_total),0) AS totalTokens
+            FROM token_usage_log
+            GROUP BY t_purpose
+            ]]>
+    </select>
+
+</mapper>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.analysis.result.mapper.InterviewQuestionAnalysisMapper">
+
+    <insert id="insertQuestionAnalysis"
+            parameterType="InterviewQuestionAnalysisVO">
+
+        INSERT INTO interview_question_analysis (
+        qa_q_idx,
+        qa_total_score,
+        qa_tech_score,
+        qa_logic_score,
+        qa_soft_score,
+        qa_miss_keywords,
+        qa_feedback_summary,
+        qa_after_level,
+        qa_create_at
+        ) VALUES (
+        #{qaQIdx},
+        #{qaTotalScore},
+        #{qaTechScore},
+        #{qaLogicScore},
+        #{qaSoftScore},
+        #{qaMissKeywords},
+        #{qaFeedbackSummary},
+        #{qaAfterLevel},
+        #{qaCreateAt}
+        )
+
+    </insert>
+
+    <select id="selectBySessionIdx"
+            parameterType="int"
+            resultType="com.ict.finalproject.analysis.result.vo.InterviewQuestionAnalysisVO">
+
+        SELECT
+        qa.qa_idx,
+        qa.qa_q_idx,
+        qa.qa_total_score,
+        qa.qa_tech_score,
+        qa.qa_logic_score,
+        qa.qa_soft_score,
+        qa.qa_feedback_summary,
+        qa.qa_create_at
+        FROM interview_question_analysis qa
+        JOIN interview_qna q
+        ON qa.qa_q_idx = q.q_idx
+        WHERE q.q_s_idx = #{sIdx}
+        ORDER BY qa.qa_idx ASC
+
+    </select>
+
+
+</mapper>

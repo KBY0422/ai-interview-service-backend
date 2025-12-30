@@ -1,0 +1,33 @@
+# Backend CI Workflow
+# Spring Boot 백엔드 빌드 검증용 CI
+
+name: Backend CI
+
+on:
+  # develop 또는 main으로 들어오는 PR에서 실행
+  pull_request:
+    branches: [ develop, main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # PR 코드 체크아웃
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # JDK 설정 (프로젝트에 맞게 버전 확인)
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # Gradle 실행 권한 부여
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # Gradle 빌드 (테스트 제외)
+      - name: Build with Gradle
+        run: ./gradlew build -x test

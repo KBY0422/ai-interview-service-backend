@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.usercontrol.mapper.UserControlMapper">
+
+    <select id="selectMembersPaged" resultType="UsercontrolVO">
+        SELECT
+        m_idx,
+        m_id,
+        m_active,
+        m_admin,
+        m_regdate,
+        m_d_regdate
+        FROM member
+        where m_admin =0
+        ORDER BY m_idx DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="selectMemberCount" resultType="int">
+        SELECT COUNT(*) FROM member  where m_admin =0
+    </select>
+
+    <select id="searchMembersPaged" resultType="UsercontrolVO">
+        SELECT
+        m_idx, m_id, m_name, m_email,
+        m_active, m_admin, m_regdate, m_d_regdate
+        FROM member
+        WHERE m_admin = 0
+        AND (
+        m_id    LIKE CONCAT('%', #{keyword}, '%')
+        OR m_name  LIKE CONCAT('%', #{keyword}, '%')
+        OR m_email LIKE CONCAT('%', #{keyword}, '%')
+        )
+        ORDER BY m_idx DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="searchMemberCount" resultType="int">
+        SELECT COUNT(*)
+        FROM member
+        WHERE m_admin = 0
+        AND (
+        m_id    LIKE CONCAT('%', #{keyword}, '%')
+        OR m_name  LIKE CONCAT('%', #{keyword}, '%')
+        OR m_email LIKE CONCAT('%', #{keyword}, '%')
+        )
+    </select>
+
+
+    <update id="updateMemberActive">
+        UPDATE member
+        <set>
+            m_active = #{mActive}
+            <if test="mActive == 0">
+                , m_d_regdate = NOW()
+            </if>
+            <if test="mActive == 1">
+                , m_d_regdate = NULL
+            </if>
+        </set>
+        WHERE m_idx = #{mIdx}
+        AND m_admin = 0
+    </update>
+
+
+</mapper>

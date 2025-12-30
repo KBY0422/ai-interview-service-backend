@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.analysis.pdf.mapper.InterviewPdfMapper">
+
+    <!-- PDF 데이터 조회 -->
+    <select id="selectPdfData"
+            parameterType="int"
+            resultType="com.ict.finalproject.analysis.pdf.vo.InterviewPdfDataVO">
+        <![CDATA[
+        SELECT
+            m.m_name         AS mName,
+            s.s_job          AS sJob,
+            s.s_type         AS sType,
+            a.sa_total_score AS saTotalScore,
+            a.sa_tech_score  AS saTechScore,
+            a.sa_logic_score AS saLogicScore,
+            a.sa_soft_score  AS saSoftScore,
+            a.sa_level_avg   AS saLevelAvg,
+            a.sa_summary     AS saSummary,
+            a.sa_strengths   AS saStrengths,
+            a.sa_weaknesses  AS saWeaknesses,
+            a.sa_feedback    AS saFeedback,
+            a.sa_create_at   AS saCreateAt
+        FROM interview_session s
+                 JOIN member m ON s.s_m_idx = m.m_idx
+                 JOIN interview_session_analysis a ON s.s_idx = a.sa_s_idx
+        WHERE s.s_idx = #{sIdx}
+        ]]>
+    </select>
+
+    <!-- 활성 PDF 조회 -->
+    <select id="findActiveBySessionIdx"
+            parameterType="int"
+            resultType="com.ict.finalproject.analysis.pdf.vo.InterviewPdfVO">
+        <![CDATA[
+        SELECT
+            f_idx            AS fIdx,
+            f_s_idx          AS fSIdx,
+            f_title          AS fTitle,
+            f_path           AS fPath,
+            f_regdate        AS fRegdate,
+            f_expire_at      AS fExpireAt,
+            f_active         AS fActive,
+            f_download_count AS fDownloadCount
+        FROM interview_file
+        WHERE f_s_idx = #{sIdx}
+          AND f_active = 1
+        ORDER BY f_regdate DESC
+            LIMIT 1
+        ]]>
+    </select>
+
+    <update id="deactivateActiveBySession" parameterType="int">
+        <![CDATA[
+        UPDATE interview_file
+        SET f_active = 0
+        WHERE f_s_idx = #{sIdx}
+        ]]>
+    </update>
+
+    <insert id="insertPdf"
+            parameterType="com.ict.finalproject.analysis.pdf.vo.InterviewPdfVO">
+        <![CDATA[
+        INSERT INTO interview_file
+        (f_s_idx, f_title, f_path, f_regdate, f_expire_at, f_active, f_download_count)
+        VALUES
+            (#{fSIdx}, #{fTitle}, #{fPath}, #{fRegdate}, #{fExpireAt}, #{fActive}, #{fDownloadCount})
+        ]]>
+    </insert>
+
+    <update id="increaseDownloadCount" parameterType="int">
+        <![CDATA[
+        UPDATE interview_file
+        SET f_download_count = f_download_count + 1
+        WHERE f_s_idx = #{sIdx}
+          AND f_active = 1
+        ]]>
+    </update>
+
+</mapper>

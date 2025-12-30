@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.news.mapper.NewsMapper">
+    <select id="getKeywordList" resultType="com.ict.finalproject.news.vo.NewsVO" parameterType="NewsVO">
+        SELECT
+        k_idx,
+        k_content,
+        k_count
+        FROM `keyword`
+        ORDER BY k_count DESC
+    </select>
+
+    <update id="increaseKeywordCount">
+        UPDATE `keyword`
+        SET k_count = k_count + 1
+        WHERE k_content = #{kContent}
+    </update>
+
+    <insert id="insertKeyword" parameterType="String">
+        INSERT INTO keyword (k_content)
+        VALUES (#{keyword})
+    </insert>
+
+    <delete id="deleteKeyword" parameterType="String">
+        DELETE FROM keyword
+        WHERE k_content = #{k_content}
+    </delete>
+
+</mapper>

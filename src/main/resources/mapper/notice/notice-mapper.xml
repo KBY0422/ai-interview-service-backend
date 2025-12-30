@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.notice.mapper.NoticeMapper">
+
+    <!-- ResultMap -->
+    <resultMap id="noticeMap" type="com.ict.finalproject.notice.vo.NoticeVO">
+        <id property="n_idx" column="n_idx"/>
+
+        <result property="n_title" column="n_title"/>
+        <result property="n_content" column="n_content"/>
+        <result property="n_writedate" column="n_writedate"/>
+        <result property="n_hit" column="n_hit"/>
+        <result property="n_active" column="n_active"/>
+        <result property="n_delete" column="n_delete"/>
+        <result property="n_pin" column="n_pin"/>    <!--   상단공지    -->
+    </resultMap>
+
+    <!-- User List -->
+    <select id="getList" resultMap="noticeMap">
+        SELECT *
+        FROM notice
+        WHERE n_active = 1
+        ORDER BY n_pin DESC, n_idx DESC                 <!--   상단공지    -->
+    </select>
+
+    <!-- Total Count (User) -->
+    <select id="getTotalRecord" resultType="int">
+        SELECT COUNT(*)
+        FROM notice
+        WHERE n_active = 1
+    </select>
+
+    <!-- Total Count (Admin) -->
+    <select id="getTotalRecordAdmin" resultType="int">
+        SELECT COUNT(*)
+        FROM notice
+    </select>
+
+    <!-- Paging (User) -->
+    <select id="getPageList" parameterType="map" resultMap="noticeMap">
+        SELECT *
+        FROM notice
+        WHERE n_active = 1
+        ORDER BY n_pin DESC, n_idx DESC       <!--   상단공지    -->
+        LIMIT #{start}, #{limit}
+    </select>
+
+    <!-- Paging (Admin) -->
+    <select id="getPageListAdmin" parameterType="map" resultMap="noticeMap">
+        SELECT *
+        FROM notice
+        ORDER BY n_pin DESC, n_active DESC, n_idx DESC   <!--   상단공지    -->
+        LIMIT #{start}, #{limit}
+    </select>
+
+    <!-- Detail -->
+    <select id="getDetail" parameterType="String" resultMap="noticeMap">
+        SELECT *
+        FROM notice
+        WHERE n_idx = #{n_idx}
+    </select>
+
+    <!-- Insert -->
+    <!-- 상단공지 Insert 추가 -->
+    <insert id="getInsert" parameterType="com.ict.finalproject.notice.vo.NoticeVO">
+        INSERT INTO notice (
+        n_title,
+        n_content,
+        n_writedate,
+        n_active,
+        n_pin
+        ) VALUES (
+        #{n_title},
+        #{n_content},
+        #{n_writedate},
+        1,
+        #{n_pin}
+        )
+    </insert>
+
+    <!-- Soft Delete -->
+    <update id="getDelete" parameterType="com.ict.finalproject.notice.vo.NoticeVO">
+        UPDATE notice
+        SET
+        n_pin = 0,           <!-- 삭제시 일반공지로 변경해야만 삭제된 공지가 뒤로 간다.  -->
+        n_active = 0,
+        n_delete = #{n_delete}
+        WHERE n_idx = #{n_idx}
+    </update>
+
+    <!-- Update Content -->
+    <update id="getUpdate" parameterType="com.ict.finalproject.notice.vo.NoticeVO">
+        UPDATE notice
+        SET n_content = #{n_content},
+        n_title = #{n_title},
+        n_pin = #{n_pin}
+        WHERE n_idx = #{n_idx}
+    </update>
+
+    <!-- Update Hit -->
+    <update id="getUpdateHit" parameterType="com.ict.finalproject.notice.vo.NoticeVO">
+        UPDATE notice
+        SET n_hit = n_hit + 1
+        WHERE n_idx = #{n_idx}
+    </update>
+
+    <!-- 상단공지 개수 -->
+    <select id="getPinnedCount" resultType="int">
+        SELECT COUNT(*)
+        FROM notice
+        WHERE n_pin = 1
+        AND n_active = 1
+    </select>
+
+    <!-- 기존 상단공지 자동 해제 -->
+    <update id="clearPinnedNotice">
+        UPDATE notice
+        SET n_pin = 0
+        WHERE n_idx = (
+        SELECT min_idx FROM (
+        SELECT MIN(n_idx) as min_idx
+        FROM notice
+        WHERE n_pin = 1 AND n_active = 1
+        ) as temp
+        )
+    </update>
+</mapper>

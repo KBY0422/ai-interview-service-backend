@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.analysis.result.mapper.InterviewSessionAnalysisMapper">
+    <select id="selectBySessionIdx"
+            parameterType="int"
+            resultType="InterviewSessionAnalysisVO">
+        SELECT
+        sa_idx,
+        sa_s_idx,
+        sa_total_score,
+        sa_tech_score,
+        sa_logic_score,
+        sa_soft_score,
+        sa_level_avg,
+        sa_wrong_answer_rate,
+        sa_summary,
+        sa_strengths,
+        sa_weaknesses,
+        sa_feedback,
+        sa_create_at
+        FROM interview_session_analysis
+        WHERE sa_s_idx = #{sIdx}
+    </select>
+
+
+    <insert id="insertSessionAnalysis"
+            parameterType="InterviewSessionAnalysisVO">
+        INSERT INTO interview_session_analysis (
+        sa_s_idx,
+        sa_total_score,
+        sa_tech_score,
+        sa_logic_score,
+        sa_soft_score,
+        sa_level_avg,
+        sa_wrong_answer_rate,
+        sa_summary,
+        sa_strengths,
+        sa_weaknesses,
+        sa_feedback,
+        sa_create_at
+        )
+        VALUES (
+        #{saSIdx},
+        #{saTotalScore},
+        #{saTechScore},
+        #{saLogicScore},
+        #{saSoftScore},
+        #{saLevelAvg},
+        #{saWrongAnswerRate},
+        #{saSummary},
+        #{saStrengths},
+        #{saWeaknesses},
+        #{saFeedback},
+        #{saCreateAt}
+        )
+    </insert>
+
+
+    <select id="selectJobBySessionIdx" parameterType="int" resultType="string">
+        SELECT s_job
+        FROM interview_session
+        WHERE s_idx = #{sIdx}
+    </select>
+
+
+    <!-- ✅ [추가] token_usage_log - SESSION 단위 토큰 사용량 저장 -->
+    <update id="updateSessionTokenUsage"
+            parameterType="com.ict.finalproject.analysis.result.service.InterviewSessionAnalysisServiceImpl$TokenUsageLogVO">
+        update token_usage_log
+        set t_total = t_total + #{tTotal}
+        where t_m_idx = #{tMIdx}
+        and t_s_idx = #{tSIdx}
+    </update>
+
+</mapper>

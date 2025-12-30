@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ict.finalproject.analysis.result.mapper.InterviewQnaMapper">
+    <select id="selectBySessionIdx"
+            parameterType="int"
+            resultType="InterviewQnaVO">
+        SELECT
+        q_idx,
+        q_s_idx,
+        q_content,
+        q_type
+        FROM interview_qna
+        WHERE q_s_idx = #{sIdx}
+        ORDER BY q_idx ASC
+    </select>
+</mapper>
