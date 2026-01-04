@@ -1,15 +1,26 @@
-# 1. Java 17 런타임
-FROM eclipse-temurin:17-jdk
-
-# 2. 컨테이너 내부 작업 디렉토리
+# =========================
+# 1. Build stage
+# =========================
+FROM gradle:8.5-jdk21 AS build
 WORKDIR /app
 
-# 3. 빌드된 JAR 파일 복사
-ARG JAR_FILE=build/libs/*.jar
-COPY ${JAR_FILE} app.jar
+# 캐시 최적화
+COPY build.gradle settings.gradle ./
+COPY gradle ./gradle
+RUN gradle dependencies --no-daemon
 
-# 4. 포트 노출
+# 소스 복사 & 빌드
+COPY . .
+RUN gradle clean build -x test --no-daemon
+
+# =========================
+# 2. Runtime stage
+# =========================
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+
+# 빌드 산출물 복사
+COPY --from=build /app/build/libs/*.jar app.jar
+
 EXPOSE 8080
-
-# 5. 실행 명령
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
