@@ -29,6 +29,11 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
+
+                // 🔥🔥🔥 이 두 줄이 핵심
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
+
                 .authorizeHttpRequests(auth -> auth
                         // 🔥 Preflight 요청 무조건 허용
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
