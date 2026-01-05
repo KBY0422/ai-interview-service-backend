@@ -30,6 +30,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        // 🔥 Preflight 요청 무조건 허용
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         // 인증 없이 허용할 것만 permitAll
                         .requestMatchers(
                                 "/member/login",
