@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: finalproject-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root1234
+      MYSQL_DATABASE: teamfinal_project
+      MYSQL_USER: ictedu           # ⭐ 네 실제 계정
+      MYSQL_PASSWORD: 1111         # ⭐ 네 실제 비밀번호
+    ports:
+      - "3307:3306"   # ⭐ 로컬 3307 → 컨테이너 3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+
+  backend:
+    image: finalproject-backend:local
+    container_name: finalproject-backend
+    depends_on:
+      - mysql
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: secret
+
+      # ⭐ 컨테이너 내부에서는 mysql:3306
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/teamfinal_project?useSSL=false&serverTimezone=Asia/Seoul
+      SPRING_DATASOURCE_USERNAME: ictedu     # ⭐ 동일
+      SPRING_DATASOURCE_PASSWORD: 1111       # ⭐ 동일
+
+      JWT_SECRET: this_is_a_very_long_and_secure_jwt_secret_key_32bytes
+
+volumes:
+  mysql-data:

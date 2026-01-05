@@ -1,0 +1,47 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: finalproject-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: teamfinal_project
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+
+  backend:
+    image: ${DOCKER_USERNAME}/finalproject-backend:latest
+    container_name: finalproject-backend
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: secret
+
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/teamfinal_project?useSSL=false&serverTimezone=Asia/Seoul
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      SPRING_AI_OPENAI_API_KEY: ${SPRING_AI_OPENAI_API_KEY}
+      SPRING_AI_OPENAI_MODEL: ${SPRING_AI_OPENAI_MODEL}
+      SPRING_AI_OPENAI_TEMPERATURE: ${SPRING_AI_OPENAI_TEMPERATURE}
+      API_GPT_KEY: ${API_GPT_KEY}
+      API_GPT_MODEL: ${API_GPT_MODEL}
+      API_NAVER_CLIENT_ID: ${API_NAVER_CLIENT_ID}
+      API_NAVER_CLIENT_SECRET: ${API_NAVER_CLIENT_SECRET}
+      MAIL_SMTP_USERNAME: ${MAIL_SMTP_USERNAME}
+      MAIL_SMTP_PASSWORD: ${MAIL_SMTP_PASSWORD}
+      FILE_PDF_DIR: ${FILE_PDF_DIR}
+
+volumes:
+  mysql-data:
