@@ -26,6 +26,34 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     private final MemberService memberService;
 
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        String method = request.getMethod();
+
+        // 1️⃣ Preflight 요청
+        if ("OPTIONS".equalsIgnoreCase(method)) {
+            return true;
+        }
+
+        // 2️⃣ 인증 없이 허용할 API
+        return path.startsWith("/member/login")
+                || path.startsWith("/member/register")
+                || path.startsWith("/member/idCheck")
+                || path.startsWith("/member/sendCode")
+                || path.startsWith("/member/verifyCode")
+                || path.startsWith("/member/findId")
+                || path.startsWith("/member/sendPasswordResetCode")
+                || path.startsWith("/member/verifyPasswordResetCode")
+                || path.startsWith("/member/newPassword")
+                || path.startsWith("/member/refresh")
+                || path.startsWith("/guestbook/")
+                || path.startsWith("/notice/")
+                || path.equals("/error");
+    }
+
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
