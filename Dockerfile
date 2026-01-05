@@ -1,25 +1,28 @@
 # =========================
 # 1. Build stage
 # =========================
-FROM gradle:8.5-jdk21 AS build
+FROM gradle:8.5-jdk17 AS build
 WORKDIR /app
 
-# 캐시 최적화
-COPY build.gradle settings.gradle ./
+# Gradle wrapper & 설정 복사
+COPY gradlew gradlew.bat ./
 COPY gradle ./gradle
-RUN gradle dependencies --no-daemon
+COPY build.gradle settings.gradle ./
 
-# 소스 복사 & 빌드
+RUN chmod +x gradlew
+
+# 전체 소스 복사
 COPY . .
-RUN gradle clean build -x test --no-daemon
+
+# build (여기서 한 번만 실행)
+RUN ./gradlew clean build -x test --no-daemon
 
 # =========================
 # 2. Runtime stage
 # =========================
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 
-# 빌드 산출물 복사
 COPY --from=build /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
