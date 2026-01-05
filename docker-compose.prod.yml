@@ -27,7 +27,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: secret
 
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/teamfinal_project?useSSL=false&serverTimezone=Asia/Seoul
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/teamfinal_project?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
 
