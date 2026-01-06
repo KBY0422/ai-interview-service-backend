@@ -49,7 +49,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 || path.startsWith("/member/newPassword")
                 || path.startsWith("/member/refresh")
                 || path.startsWith("/guestbook/")
-                || path.startsWith("/notice/")
                 || path.equals("/error");
     }
 
